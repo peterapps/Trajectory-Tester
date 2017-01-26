@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Trajectory Tester</title>
+		<style>
+			body {
+				font-family: sans-serif;
+				background-color: #FFFFE0;
+			}
+			table, td, tr {
+				border-collapse: collapse;
+				border: 1px solid black;
+			}
+			canvas {
+				background-color: white;
+				border: 1px solid black;
+				-moz-transform: scale(-1, 1);
+				-webkit-transform: scale(-1, 1);
+				-o-transform: scale(-1, 1);
+				-ms-transform: scale(-1, 1);
+				transform: scale(-1, 1);
+			}
+			input[type=text] {
+				width: 5em;
+			}
+		</style>
+		<script type="text/javascript" src="./draw.js"></script>
+		<script type="text/javascript">
+			var velocity = 0;
+			var distance = 0;
+			var angle = 0;
+			var angleArr = [];
+			var colors = ["green", "blue"];
+
+			function changeVel(txt) {
+			  velocity = parseInt(txt);
+			  document.getElementById("velocity").value = txt;
+			  document.getElementById("vOutput").value = txt;
+			  document.getElementById("vOutputMPH").value = parseInt(txt) * 5 / 88;
+			  updateAngle();
+			}
+
+			function changeDist(txt) {
+			  distance = parseInt(txt);
+			  document.getElementById("distance").value = txt;
+			  document.getElementById("dOutput").value = txt;
+			  document.getElementById("dOutputFt").value = parseInt(txt) / 12;
+			  updateAngle();
+			}
+			function updateAngle(){
+			  angle = calculateAngle();
+			  changeAngle(angle);
+			}
+			function changeAngle(deg) {
+				var txt = [];
+				for (var i = 0; i < angleArr.length; i++){
+					txt[i] = "<font color='" + colors[i] + "'>" + angleArr[i] + "°</font>";
+				}
+				document.getElementById("angle").innerHTML = txt.join(", ");
+			}
+			function power(z, p) {
+			  return Math.pow(z, p);
+			}
+			function calculateAngle() {
+			  var g = 386.09; // gravity
+			  var x = distance + 42 * 1.75; //distance from boiler
+			  var y = 97; //boiler
+			  var v = vo = velocity; //velocity
+			  
+			  var arr=[];
+			  arr[0] = 180 / Math.PI * Math.atan( (v**2 + Math.sqrt( v**4 - g * (g * x**2 + 2 * y * v**2) ) ) / (g * x) );
+			  arr[1] = 180 / Math.PI * Math.atan( (v**2 - Math.sqrt( v**4 - g * (g * x**2 + 2 * y * v**2) ) ) / (g * x) );
+			  angleArr = arr;
+			}
+			window.addEventListener("load", function(){
+			  changeVel(0);
+			  changeDist(0);
+			  changeAngle(0);
+			  loadCanvas();
+			  draw();
+			});
+	</script>
+	</head>
+	<body>
+		<table>
+			<thead>
+				<tr>
+					<td colspan="2"><b>Inputs</b></td>
+					<td><b>Outputs</b></td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><b>Velocity</b></td>
+					<td>
+						<input type="range" value="0" min="0" max="1835" id="velocity" oninput="changeVel(this.value);fire();" />
+						<input type="text" id="vOutput" oninput="changeVel(this.value);fire();" /> in/sec =
+						<input type="text" id="vOutputMPH" onchange="changeVel(this.value * 88 / 5);fire();" /> mph
+					</td>
+					<td rowspan="2">
+						<b>Angle</b><br/>
+						<em id="angle" />
+					</td>
+				</tr>
+				<tr>
+					<td><b>Distance</b></td>
+					<td>
+						<input type="range" value="0" min="0" max="389.4" id="distance" oninput="changeDist(this.value);fire();" />
+						<input type="text" id="dOutput" oninput="changeDist(this.value);fire();" /> in =
+						<input type="text" id="dOutputFt" onchange="changeDist(this.value * 12);fire();" /> ft
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<br/>
+		<canvas id="canvas" width="1000" height="500">Your browser does not support the canvas.</canvas>
+	</body>
+</html>
